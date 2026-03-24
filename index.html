@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Моделювання кінематики прямолінійного руху</title>
+    <link rel="icon" href="calculator.png">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Моделювання кінематики прямолінійного руху</h1>
+        <form id="input-form" class="input-panel">
+            <div class="input-group">
+                <label for="x0">X₀ (м):</label>
+                <input type="number" id="x0" value="0" step="any">
+            </div>
+
+            <div class="input-group">
+                <label for="y0">Y₀ (м):</label>
+                <input type="number" id="y0" value="0" step="any">
+            </div>
+
+            <div class="input-group">
+                <label for="angle">Кут α (градуси):</label>
+                <input type="number" id="angle" value="0" min="0" max="360" step="any">
+            </div>
+
+            <div class="input-group">
+                <label for="speed">Початкова швидкість v₀ (м/с):</label>
+                <input type="number" id="speed" value="0" min="0" step="any">
+            </div>
+
+            <div class="input-group">
+                <label for="acceleration">Прискорення a (м/с²):</label>
+                <input type="number" id="acceleration" value="0" step="any">
+            </div>
+
+            <div class="input-group">
+                <label for="color">Колір траєкторії:</label>
+                <input type="color" id="color" value="#ff0000">
+            </div>
+
+            <div class="button-group">
+                <button id="drawButton">Побудувати траєкторію</button>
+                <button type="button" id="clearButton">Очистити</button>
+            </div>
+
+            <canvas id="canvas" width="800" height="800"></canvas>
+        </form>
+    </div>
+</body>
+</html>
