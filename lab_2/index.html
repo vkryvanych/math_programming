@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Моделювання руху тіла, кинутого під кутом до горизонту</title>
+    <link rel="icon" href="calculator.png">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Моделювання руху тіла, кинутого під кутом до горизонту</h1>
+        <form id="input-form" class="input-panel">
+            <div class="input-group">
+                <label for="speed">Початкова швидкість v₀ (м/с):</label>
+                <input type="number" id="speed" value="25" step="any"> 
+            </div>
+
+            <div class="input-group">
+                <label for="angle">Кут β (від 0 до 90 градусів):</label>
+                <input type="number" id="angle" value="45" step="any">
+            </div>
+
+            <div class="input-group">
+                <label for="color">Колір траєкторії:</label>
+                <input type="color" id="color" value="#ff0000">
+            </div>
+
+            <div class="button-group">
+                <button type="submit" id="drawButton">Побудувати траєкторію</button>
+                <button type="button" id="clearButton">Очистити</button>
+            </div>
+        </form>
+
+        <div id="results" class="results-panel">
+            <h3>Результати обчислень:</h3>
+            <p>Час польоту (t<sub>пол</sub>): <span id="res-time">0.00</span> с</p>
+            <p>Максимальна висота (h): <span id="res-height">0.00</span> м</p>
+            <p>Дальність польоту (l): <span id="res-distance">0.00</span> м</p>
+        </div>
+
+        <canvas id="canvas" width="800" height="500"></canvas>
+    </div>
+</body>
+</html>
