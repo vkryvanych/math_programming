@@ -25,6 +25,11 @@ function addResultRow(methodName, maxV, weight, items, time) {
     summaryBody.appendChild(row);
 }
 
+// Функція для штучної затримки
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // 1. Метод грубої сили
 function bruteForceKnapsack() {
     let maxV = 0; 
@@ -155,6 +160,106 @@ function bnbKnapsack() {
     return { totalV: maxV, currentW: bestW, selectedItems: bestItems };
 }
 
+// 5. Динамічне програмування
+async function dpKnapsackAnimated() {
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(btn => btn.disabled = true);
+
+    tableContainer.innerHTML = '';
+    
+    const table = document.createElement('table');
+    const tbody = document.createElement('tbody');
+    
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    const thEmpty = document.createElement('th');
+    thEmpty.innerText = 'Предмет \\ Вага (w)';
+    headerRow.appendChild(thEmpty);
+    
+    for (let w = 0; w <= W; w++) {
+        const th = document.createElement('th');
+        th.innerText = w;
+        headerRow.appendChild(th);
+    }
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    let dp = Array(n + 1).fill().map(() => Array(W + 1).fill(0));
+    let cells = Array(n + 1).fill().map(() => Array(W + 1).fill(null));
+
+    for (let i = 0; i <= n; i++) {
+        const tr = document.createElement('tr');
+        const th = document.createElement('th');
+        th.innerText = i === 0 ? '0' : `Предмет ${i}\n(w:${weights[i-1]}, v:${values[i-1]})`;
+        tr.appendChild(th);
+
+        for (let w = 0; w <= W; w++) {
+            const td = document.createElement('td');
+            td.innerText = ''; 
+            tr.appendChild(td);
+            cells[i][w] = td;
+        }
+        tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    tableContainer.appendChild(table);
+
+    const t0 = performance.now();
+    let pureDP = Array(n + 1).fill().map(() => Array(W + 1).fill(0));
+    for (let i = 1; i <= n; i++) {
+        for (let w = 1; w <= W; w++) {
+            if (weights[i - 1] <= w) {
+                pureDP[i][w] = Math.max(pureDP[i - 1][w], pureDP[i - 1][w - weights[i - 1]] + values[i - 1]);
+            } else {
+                pureDP[i][w] = pureDP[i - 1][w];
+            }
+        }
+    }
+    const t1 = performance.now();
+    const execTime = t1 - t0;
+
+    for (let i = 0; i <= n; i++) {
+        for (let w = 0; w <= W; w++) {
+            cells[i][w].classList.add('active-cell');
+            
+            if (i === 0 || w === 0) {
+                dp[i][w] = 0;
+            } else if (weights[i - 1] <= w) {
+                dp[i][w] = Math.max(dp[i - 1][w], dp[i - 1][w - weights[i - 1]] + values[i - 1]);
+            } else {
+                dp[i][w] = dp[i - 1][w];
+            }
+            
+            cells[i][w].innerText = dp[i][w];
+            await sleep(10); 
+            cells[i][w].classList.remove('active-cell');
+        }
+    }
+
+    let resW = W;
+    let selectedItems = [];
+    let currentWeight = 0;
+
+    for (let i = n; i > 0 && resW > 0; i--) {
+        if (dp[i][resW] !== dp[i - 1][resW]) {
+            selectedItems.push(i);
+            currentWeight += weights[i - 1];
+            
+            cells[i][resW].style.backgroundColor = '#4caf50';
+            cells[i][resW].style.color = 'white';
+            cells[i][resW].style.fontWeight = 'bold';
+            await sleep(100); 
+
+            resW -= weights[i - 1];
+        }
+    }
+    selectedItems.sort((a, b) => a - b);
+
+    buttons.forEach(btn => btn.disabled = false);
+
+    addResultRow('Динамічне програмування', dp[n][W], currentWeight, selectedItems, execTime);
+}
+
 // Обробники кнопок
 document.getElementById('btn-brute').addEventListener('click', () => {
     const t0 = performance.now(); 
@@ -182,4 +287,8 @@ document.getElementById('btn-bnb').addEventListener('click', () => {
     const res = bnbKnapsack(); 
     const t1 = performance.now();
     addResultRow('Метод гілок і меж', res.totalV, res.currentW, res.selectedItems, t1 - t0);
+});
+
+document.getElementById('btn-dp').addEventListener('click', () => {
+    dpKnapsackAnimated();
 });
