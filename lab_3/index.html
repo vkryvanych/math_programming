@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача про Рюкзак</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="calculator.png">
+    <script src="script.js" defer></script>
+</head>
+<body>
+
+    <h1>Моделювання задачі «Рюкзак»</h1>
+    
+    <div class="controls">
+        <h3>Вхідні дані (Варіант 27)</h3>
+        <p class="input-data">
+            <strong>Місткість (W):</strong> 30 &nbsp;|&nbsp; <strong>Кількість (n):</strong> 9<br>
+            <strong>Ваги (w):</strong> [2, 2, 3, 5, 4, 10, 4, 4, 6]<br>
+            <strong>Цінності (v):</strong> [13, 3, 15, 6, 2, 12, 6, 5, 11]
+        </p>
+        
+        <button id="btn-brute">Метод перебору</button>
+        <button id="btn-greedy">Жадібний алгоритм</button>
+        <button id="btn-recursive">Рекурсивний метод</button>
+        <button id="btn-bnb">Метод гілок і меж</button>
+        <button id="btn-dp">Динамічне програмування (Анімація)</button>
+        <button id="btn-clear" class="btn-clear">Очистити</button>
+    </div>
+
+    <div class="output-section">
+        <div class="results-panel">
+            <h2>Зведена таблиця результатів</h2>
+            <table id="summary-table">
+                <thead>
+                    <tr>
+                        <th>Метод</th>
+                        <th>Цінність</th>
+                        <th>Вага</th>
+                        <th>Предмети</th>
+                        <th>Час (мс)</th>
+                    </tr>
+                </thead>
+                <tbody id="summary-body">
+                </tbody>
+            </table>
+        </div>
+        <div class="table-panel">
+            <h2>Матриця ДП</h2>
+            <div id="table-container"></div>
+        </div>
+    </div>
+</body>
+</html>
