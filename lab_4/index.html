@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Апроксимація</title>
+    <link rel="icon" type="image/x-icon" href="icon.png">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div class="controls">
+        <div class="control-group">
+            <label for="dataset">Набір даних: </label>
+            <select id="dataset">
+                <option value="" disabled selected>Оберіть кількість точок</option>
+                <option value="5">5 точок</option>
+                <option value="9">10 точок</option>
+                <option value="20">20 точок (Спадний логарифм)</option>
+            </select>
+        </div>
+        <div class="mode-selector control-group">
+            <label><input type="radio" name="mode" value="all" checked> Усі</label>
+            <label><input type="radio" name="mode" value="lagrange"> Лагранж</label>
+            <label><input type="radio" name="mode" value="mnk"> МНК</label>
+        </div>
+        <div class="button-group">
+            <button id="btn-lagrange" class="action-btn lagrange-btn">Анімація Лагранж</button>
+            <button id="btn-mnk" class="action-btn mnk-btn">Анімація МНК</button>
+            <button id="btn-clear" class="action-btn clear-btn">Очистити</button>
+        </div>
+    </div>
+    <canvas id="canvas" width="1000" height="600"></canvas>
+    <div id="tooltip"></div>
+    <div class="legend">
+        <div class="legend-item"><span style="background: #ffffff;"></span> Вузли</div>
+        <div class="legend-item"><span style="background: #3b82f6;"></span> Лагранж</div>
+        <div class="legend-item"><span style="background: #b537f2;"></span> МНК (m=3)</div>
+    </div>
+</body>
+</html>
