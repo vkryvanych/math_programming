@@ -187,6 +187,40 @@ async function animateLagrange() {
     isAnimating = false; toggleControls(false); 
 }
 
+// Функція анімації МНК
+async function animateMNK() {
+    if (!currentData.length || isAnimating) return alert('Оберіть кількість точок!');
+    document.querySelector('input[value="mnk"]').checked = true;
+    activeMode = 'mnk';
+
+    isAnimating = true; toggleControls(true);
+    mnkCoeffs = calculateMNK(currentData, 3);
+    
+    const frames = 60;
+    for (let f = 0; f <= frames; f++) {
+        drawGrid(); 
+        drawPoints(currentData);
+        let interpCoeffs = mnkCoeffs.map((c, i) => i === 0 ? c : c * (f / frames));
+        drawCurve(x => mnkValue(x, interpCoeffs), '#b537f2');
+        await new Promise(r => setTimeout(r, 20));
+    }
+
+    for (let i = 0; i < currentData.length; i++) {
+        let p = currentData[i];
+        let calcY = mnkValue(p.x, mnkCoeffs);
+        ctx.strokeStyle = 'rgba(181, 55, 242, 0.9)';
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(toScreenX(p.x), toScreenY(p.y));
+        ctx.lineTo(toScreenX(p.x), toScreenY(calcY));
+        ctx.stroke();
+        ctx.setLineDash([]);
+        await new Promise(r => setTimeout(r, 80));
+    }
+
+    isAnimating = false; toggleControls(false);
+}
+
 document.getElementById('dataset').addEventListener('change', (e) => {
     currentData = datasets[e.target.value];
     mnkCoeffs = []; calculateScale(); renderStatic();
@@ -199,6 +233,9 @@ document.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener(
 
 // Підключення кнопки Лагранжа
 document.getElementById('btn-lagrange').addEventListener('click', animateLagrange);
+
+// Підключення кнопки МНК
+document.getElementById('btn-mnk').addEventListener('click', animateMNK);
 
 document.getElementById('btn-clear').addEventListener('click', () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
