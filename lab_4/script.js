@@ -159,6 +159,34 @@ function renderStatic() {
     drawPoints(currentData);
 }
 
+// Логіка блокування кнопок під час анімації
+function toggleControls(disabled) {
+    document.querySelectorAll('button, select, input').forEach(el => el.disabled = disabled);
+}
+
+// Функція анімації Лагранжа
+async function animateLagrange() {
+    if (!currentData.length || isAnimating) return alert('Оберіть кількість точок!');
+    document.querySelector('input[value="lagrange"]').checked = true;
+    activeMode = 'lagrange';
+    
+    isAnimating = true; toggleControls(true);
+    let tempPoints = [];
+    
+    for (let i = 0; i < currentData.length; i++) {
+        tempPoints.push(currentData[i]);
+        drawGrid(); 
+        drawPoints(tempPoints, i);
+        if (tempPoints.length > 1) {
+            drawCurve(x => lagrange(x, tempPoints), '#3b82f6');
+        }
+        await new Promise(r => setTimeout(r, 450)); 
+    }
+    
+    drawPoints(currentData); 
+    isAnimating = false; toggleControls(false); 
+}
+
 document.getElementById('dataset').addEventListener('change', (e) => {
     currentData = datasets[e.target.value];
     mnkCoeffs = []; calculateScale(); renderStatic();
@@ -168,6 +196,9 @@ document.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener(
     activeMode = e.target.value;
     renderStatic();
 }));
+
+// Підключення кнопки Лагранжа
+document.getElementById('btn-lagrange').addEventListener('click', animateLagrange);
 
 document.getElementById('btn-clear').addEventListener('click', () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
