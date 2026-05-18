@@ -11,6 +11,7 @@ const datasets = {
 
 let currentData = [];
 let isAnimating = false;
+let mnkCoeffs = [];
 let activeMode = 'all';
 
 const canvas = document.getElementById('canvas');
@@ -67,6 +68,48 @@ function lagrange(x, data) {
     return sum;
 }
 
+// Математика МНК
+function solveGauss(A, B) {
+    let n = A.length;
+    for (let i = 0; i < n; i++) {
+        let maxEl = Math.abs(A[i][i]), maxRow = i;
+        for (let k = i + 1; k < n; k++) {
+            if (Math.abs(A[k][i]) > maxEl) { maxEl = Math.abs(A[k][i]); maxRow = k; }
+        }
+        for (let k = i; k < n; k++) {
+            let tmp = A[maxRow][k]; A[maxRow][k] = A[i][k]; A[i][k] = tmp;
+        }
+        let tmp = B[maxRow]; B[maxRow] = B[i]; B[i] = tmp;
+        for (let k = i + 1; k < n; k++) {
+            let c = -A[k][i] / A[i][i];
+            for (let j = i; j < n; j++) { if (i === j) { A[k][j] = 0; } else { A[k][j] += c * A[i][j]; } }
+            B[k] += c * B[i];
+        }
+    }
+    let x = new Array(n).fill(0);
+    for (let i = n - 1; i >= 0; i--) {
+        x[i] = B[i] / A[i][i];
+        for (let k = i - 1; k >= 0; k--) { B[k] -= A[k][i] * x[i]; }
+    }
+    return x;
+}
+
+function calculateMNK(data, m = 3) {
+    let X = Array(m + 1).fill(0).map(() => Array(m + 1).fill(0));
+    let Y = Array(m + 1).fill(0);
+    for (let i = 0; i <= m; i++) {
+        for (let j = 0; j <= m; j++) {
+            X[i][j] = data.reduce((sum, p) => sum + Math.pow(p.x, i + j), 0);
+        }
+        Y[i] = data.reduce((sum, p) => sum + p.y * Math.pow(p.x, i), 0);
+    }
+    return solveGauss(X, Y);
+}
+
+function mnkValue(x, coeffs) {
+    return coeffs.reduce((sum, c, i) => sum + c * Math.pow(x, i), 0);
+}
+
 function drawCurve(func, color) {
     if (!currentData.length) return;
     ctx.beginPath();
@@ -87,12 +130,16 @@ function renderStatic() {
     if (activeMode === 'all' || activeMode === 'lagrange') {
         drawCurve(x => lagrange(x, currentData), '#3b82f6');
     }
+    if (activeMode === 'all' || activeMode === 'mnk') {
+        if(!mnkCoeffs.length) mnkCoeffs = calculateMNK(currentData, 3);
+        drawCurve(x => mnkValue(x, mnkCoeffs), '#b537f2');
+    }
     drawPoints(currentData);
 }
 
 document.getElementById('dataset').addEventListener('change', (e) => {
     currentData = datasets[e.target.value];
-    calculateScale(); renderStatic();
+    mnkCoeffs = []; calculateScale(); renderStatic();
 });
 
 document.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener('change', (e) => {
