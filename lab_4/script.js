@@ -15,7 +15,6 @@ let activeMode = 'all';
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-const tooltip = document.getElementById('tooltip');
 
 const padding = 60;
 let scaleX = 1, scaleY = 1, offsetX = 0, offsetY = 0;
@@ -52,22 +51,51 @@ function drawPoints(data, activeIndex = -1) {
         ctx.arc(toScreenX(p.x), toScreenY(p.y), i === activeIndex ? 7 : 5, 0, Math.PI * 2);
         ctx.fillStyle = '#ffffff';
         ctx.fill();
-        if (i === activeIndex) {
-            ctx.strokeStyle = '#3b82f6';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-        }
     });
+}
+
+// Математичне ядро Лагранжа
+function lagrange(x, data) {
+    let sum = 0;
+    for (let i = 0; i < data.length; i++) {
+        let p = 1;
+        for (let j = 0; j < data.length; j++) {
+            if (i !== j) p *= (x - data[j].x) / (data[i].x - data[j].x);
+        }
+        sum += data[i].y * p;
+    }
+    return sum;
+}
+
+function drawCurve(func, color) {
+    if (!currentData.length) return;
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.5;
+    const minX = currentData[0].x;
+    const maxX = currentData[currentData.length - 1].x;
+    for (let x = minX; x <= maxX; x += 0.05) {
+        let sx = toScreenX(x), sy = toScreenY(func(x));
+        if (x === minX) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+    }
+    ctx.stroke();
 }
 
 function renderStatic() {
     if(isAnimating) return;
     drawGrid();
+    if (activeMode === 'all' || activeMode === 'lagrange') {
+        drawCurve(x => lagrange(x, currentData), '#3b82f6');
+    }
     drawPoints(currentData);
 }
 
 document.getElementById('dataset').addEventListener('change', (e) => {
     currentData = datasets[e.target.value];
-    calculateScale(); 
-    renderStatic();
+    calculateScale(); renderStatic();
 });
+
+document.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener('change', (e) => {
+    activeMode = e.target.value;
+    renderStatic();
+}));
