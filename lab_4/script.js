@@ -16,6 +16,7 @@ let activeMode = 'all';
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
+const tooltip = document.getElementById('tooltip');
 
 const padding = 60;
 let scaleX = 1, scaleY = 1, offsetX = 0, offsetY = 0;
@@ -52,6 +53,11 @@ function drawPoints(data, activeIndex = -1) {
         ctx.arc(toScreenX(p.x), toScreenY(p.y), i === activeIndex ? 7 : 5, 0, Math.PI * 2);
         ctx.fillStyle = '#ffffff';
         ctx.fill();
+        if (i === activeIndex) {
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
     });
 }
 
@@ -124,6 +130,21 @@ function drawCurve(func, color) {
     ctx.stroke();
 }
 
+// Малювання залишків
+function drawResiduals(coeffs) {
+    ctx.strokeStyle = 'rgba(181, 55, 242, 0.6)'; 
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 5]);
+    currentData.forEach(p => {
+        let calcY = mnkValue(p.x, coeffs);
+        ctx.beginPath();
+        ctx.moveTo(toScreenX(p.x), toScreenY(p.y));
+        ctx.lineTo(toScreenX(p.x), toScreenY(calcY));
+        ctx.stroke();
+    });
+    ctx.setLineDash([]);
+}
+
 function renderStatic() {
     if(isAnimating) return;
     drawGrid();
@@ -133,6 +154,7 @@ function renderStatic() {
     if (activeMode === 'all' || activeMode === 'mnk') {
         if(!mnkCoeffs.length) mnkCoeffs = calculateMNK(currentData, 3);
         drawCurve(x => mnkValue(x, mnkCoeffs), '#b537f2');
+        drawResiduals(mnkCoeffs);
     }
     drawPoints(currentData);
 }
@@ -146,3 +168,75 @@ document.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener(
     activeMode = e.target.value;
     renderStatic();
 }));
+
+document.getElementById('btn-clear').addEventListener('click', () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    document.getElementById('dataset').value = ""; 
+    currentData = []; mnkCoeffs = [];
+});
+
+// Логіка підказок
+canvas.addEventListener('mousemove', (e) => {
+    if (!currentData.length || isAnimating) return;
+    const rect = canvas.getBoundingClientRect();
+    
+    const cssAspect = rect.width / rect.height;
+    const canvasAspect = canvas.width / canvas.height;
+    let renderWidth = rect.width;
+    let renderHeight = rect.height;
+    let offsetX_DOM = 0;
+    let offsetY_DOM = 0;
+
+    if (canvasAspect > cssAspect) {
+        renderHeight = rect.width / canvasAspect;
+        offsetY_DOM = (rect.height - renderHeight) / 2;
+    } else {
+        renderWidth = rect.height * canvasAspect;
+        offsetX_DOM = (rect.width - renderWidth) / 2;
+    }
+
+    const sx = (e.clientX - rect.left - offsetX_DOM) * (canvas.width / renderWidth);
+    const sy = (e.clientY - rect.top - offsetY_DOM) * (canvas.height / renderHeight);
+    
+    let closestPoint = null;
+    let minDistance = 50; 
+
+    currentData.forEach(p => {
+        const px = toScreenX(p.x);
+        const py = toScreenY(p.y);
+        const distance = Math.sqrt(Math.pow(px - sx, 2) + Math.pow(py - sy, 2));
+        
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestPoint = p;
+        }
+    });
+    
+    if (closestPoint) {
+        let msg = `<strong>Вузол:</strong> x=${closestPoint.x}, y=${closestPoint.y}`;
+        if (mnkCoeffs.length && (activeMode === 'all' || activeMode === 'mnk')) {
+            let calcY = mnkValue(closestPoint.x, mnkCoeffs);
+            let err = Math.abs(closestPoint.y - calcY).toFixed(3);
+            msg += `<br><span style="color:#b537f2">Похибка МНК: ${err}</span>`;
+        }
+        
+        tooltip.innerHTML = msg;
+        tooltip.style.opacity = 1; 
+        
+        let tWidth = tooltip.offsetWidth;
+        let tHeight = tooltip.offsetHeight;
+        let leftPos = e.pageX + 15;
+        let topPos = e.pageY + 15;
+        
+        if (leftPos + tWidth > window.innerWidth) leftPos = e.pageX - tWidth - 15;
+        if (topPos + tHeight > window.innerHeight) topPos = e.pageY - tHeight - 15;
+        
+        tooltip.style.left = leftPos + 'px'; 
+        tooltip.style.top = topPos + 'px';
+        
+    } else {
+        tooltip.style.opacity = 0;
+    }
+});
+
+canvas.addEventListener('mouseleave', () => tooltip.style.opacity = 0);
